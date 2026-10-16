@@ -14,5 +14,3 @@ mlruns/
 /data/stream
 /data/ingest
 /data/retrain
-/data/raw/*.csv
-/data/raw/*.xls

@@ -1,0 +1,23 @@
+stages:
+  prepare:
+    cmd: python -m fairxai.data.prepare data/raw/credit_default.csv data/processed/clean.csv
+    deps:
+      - data/raw/credit_default.csv
+      - src/fairxai/data/prepare.py
+      - src/fairxai/data/load.py
+      - configs/data.yaml
+    outs:
+      - data/processed/clean.csv
+  split:
+    cmd: python -m fairxai.data.split
+    deps:
+      - data/processed/clean.csv
+      - src/fairxai/data/split.py
+      - configs/base.yaml
+      - configs/data.yaml
+    outs:
+      - data/processed/train.csv
+      - data/processed/eval.csv
+      - data/processed/test.csv
+      - data/processed/reference_stats.json
+      - data/stream

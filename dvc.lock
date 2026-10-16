@@ -1,0 +1,68 @@
+schema: '2.0'
+stages:
+  prepare:
+    cmd: python -m fairxai.data.prepare data/raw/credit_default.csv 
+      data/processed/clean.csv
+    deps:
+    - path: configs/data.yaml
+      hash: md5
+      md5: a4b7c73974bad2778ba08b0c003b2246
+      size: 474
+    - path: data/raw/credit_default.csv
+      hash: md5
+      md5: df1b68b78adcea82ba83c8bf6a21757c
+      size: 2897190
+    - path: src/fairxai/data/load.py
+      hash: md5
+      md5: 09c49ccd10f6e2d0f79238d9fc39652c
+      size: 2612
+    - path: src/fairxai/data/prepare.py
+      hash: md5
+      md5: 205802874ecfa93f5c03b142403dbc4e
+      size: 702
+    outs:
+    - path: data/processed/clean.csv
+      hash: md5
+      md5: ae82bb05f22104c85433cafdfcf5a446
+      size: 2728293
+  split:
+    cmd: python -m fairxai.data.split
+    deps:
+    - path: configs/base.yaml
+      hash: md5
+      md5: aeeb2df279e794c0afbe7685f3d6da3d
+      size: 179
+    - path: configs/data.yaml
+      hash: md5
+      md5: a4b7c73974bad2778ba08b0c003b2246
+      size: 474
+    - path: data/processed/clean.csv
+      hash: md5
+      md5: ae82bb05f22104c85433cafdfcf5a446
+      size: 2728293
+    - path: src/fairxai/data/split.py
+      hash: md5
+      md5: 9570f25d5d39c82b8d16a752616e25ec
+      size: 2911
+    outs:
+    - path: data/processed/eval.csv
+      hash: md5
+      md5: a1b666d4098b4ea6a3b3ceaaa7f879e7
+      size: 408620
+    - path: data/processed/reference_stats.json
+      hash: md5
+      md5: 3831680596e80d333649db6f85713019
+      size: 1597
+    - path: data/processed/test.csv
+      hash: md5
+      md5: f2de6312680bd2eb7885b70deff73dc7
+      size: 272278
+    - path: data/processed/train.csv
+      hash: md5
+      md5: 8af41887a9a286d7ae0b17df96783122
+      size: 1638297
+    - path: data/stream
+      hash: md5
+      md5: 922a3e6f2f05f8348652a18e78b3d410.dir
+      size: 411254
+      nfiles: 9
