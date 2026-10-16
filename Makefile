@@ -10,7 +10,7 @@ env:
 up-lite: env
 	$(COMPOSE) --profile core up -d --wait postgres minio
 	$(COMPOSE) --profile core run --rm init
-	$(COMPOSE) --profile core up -d --build --wait mlflow serving-blue serving-green gateway prometheus
+	$(COMPOSE) --profile core up -d --build --wait mlflow serving-blue serving-green gateway prometheus grafana
 
 up: up-lite
 

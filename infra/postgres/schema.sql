@@ -23,3 +23,6 @@ CREATE TABLE IF NOT EXISTS events (
 CREATE TABLE IF NOT EXISTS gateway_state (
   id BOOLEAN PRIMARY KEY DEFAULT true CHECK (id), active TEXT NOT NULL DEFAULT 'blue', updated_at TIMESTAMPTZ NOT NULL DEFAULT now());
 INSERT INTO gateway_state (id, active) VALUES (true, 'blue') ON CONFLICT DO NOTHING;
+-- one row per (signal, model version, window); re-running monitoring on the same window updates it
+CREATE UNIQUE INDEX IF NOT EXISTS monitoring_results_window
+  ON monitoring_results (kind, model_version, window_end) WHERE window_end IS NOT NULL;

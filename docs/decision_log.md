@@ -30,3 +30,8 @@ The authoritative register is Section C of [SPEC.md](SPEC.md). This file records
 | 2026-10-16 | 6 | [VERIFY] MLflow 3.17 server validates the Host header; `--allowed-hosts` lists the internal service name and localhost. | compose file |
 | 2026-10-16 | 6 | Slot maps only MLflow `RESOURCE_DOES_NOT_EXIST` to 404; any other registry error is 500 and keeps the previous model. | `serving/app/model_store.py` |
 | 2026-10-16 | 7 | `/v1/explain` contributions are per raw request feature (encoded SHAP values summed per source column); additivity holds. Explainer is built at `/admin/load`. Training logs `explain_background.csv` (1,000 seeded train rows). | `src/fairxai/explain/shap_local.py` |
+| 2026-10-16 | 8 | [VERIFY] Evidently 0.7.23 is the drift engine (`DataDriftPreset`, KS + chi-square goodness-of-fit, per-column p-values). The scipy fallback runs the identical tests; no D7 substitution was needed. | `src/fairxai/monitoring/drift.py` |
+| 2026-10-16 | 8 | Categorical drift columns: SEX, EDUCATION, MARRIAGE (chi-square); all others KS (PAY_* numeric, per D.2). | `src/fairxai/monitoring/drift.py` |
+| 2026-10-16 | 8 | Unique index on `monitoring_results (kind, model_version, window_end)` so re-running a window updates its rows; persistence streaks are not inflated by reruns. | `infra/postgres/schema.sql` |
+| 2026-10-16 | 8 | Live fairness: hard FAIL => ALERT; INDETERMINATE or advisory warning => WARN. | `src/fairxai/monitoring/performance.py` |
+| 2026-10-16 | 8 | Grafana pinned to 12.1.1; dashboards generated once and committed as JSON. | `infra/grafana/` |

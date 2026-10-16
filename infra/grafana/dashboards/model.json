@@ -1,0 +1,184 @@
+{
+  "uid": "fairxai-model",
+  "title": "FairXAI / Model",
+  "tags": [
+    "fairxai"
+  ],
+  "timezone": "browser",
+  "schemaVersion": 39,
+  "refresh": "30s",
+  "time": {
+    "from": "now-6h",
+    "to": "now"
+  },
+  "panels": [
+    {
+      "id": 1,
+      "title": "Dataset drift share (ALERT at 0.30)",
+      "type": "timeseries",
+      "gridPos": {
+        "x": 0,
+        "y": 0,
+        "w": 12,
+        "h": 8
+      },
+      "datasource": {
+        "type": "grafana-postgresql-datasource",
+        "uid": "fairxai-pg"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "grafana-postgresql-datasource",
+            "uid": "fairxai-pg"
+          },
+          "rawSql": "SELECT window_end AS time, value AS drift_share FROM monitoring_results WHERE kind='feature_drift' AND value IS NOT NULL AND $__timeFilter(window_end) ORDER BY 1",
+          "format": "time_series",
+          "editorMode": "code",
+          "rawQuery": true
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percentunit"
+        },
+        "overrides": []
+      },
+      "options": {}
+    },
+    {
+      "id": 2,
+      "title": "PR-AUC on labelled windows vs reference",
+      "type": "timeseries",
+      "gridPos": {
+        "x": 12,
+        "y": 0,
+        "w": 12,
+        "h": 8
+      },
+      "datasource": {
+        "type": "grafana-postgresql-datasource",
+        "uid": "fairxai-pg"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "grafana-postgresql-datasource",
+            "uid": "fairxai-pg"
+          },
+          "rawSql": "SELECT window_end AS time, value AS pr_auc, (details->>'reference_pr_auc')::float AS reference FROM monitoring_results WHERE kind='performance' AND value IS NOT NULL AND $__timeFilter(window_end) ORDER BY 1",
+          "format": "time_series",
+          "editorMode": "code",
+          "rawQuery": true
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
+      "options": {}
+    },
+    {
+      "id": 3,
+      "title": "Labelled rows per window",
+      "type": "timeseries",
+      "gridPos": {
+        "x": 0,
+        "y": 8,
+        "w": 12,
+        "h": 8
+      },
+      "datasource": {
+        "type": "grafana-postgresql-datasource",
+        "uid": "fairxai-pg"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "grafana-postgresql-datasource",
+            "uid": "fairxai-pg"
+          },
+          "rawSql": "SELECT window_end AS time, n_labelled FROM monitoring_results WHERE kind='performance' AND $__timeFilter(window_end) ORDER BY 1",
+          "format": "time_series",
+          "editorMode": "code",
+          "rawQuery": true
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
+      "options": {}
+    },
+    {
+      "id": 4,
+      "title": "Predicted-default rate change (WARN at 0.10)",
+      "type": "timeseries",
+      "gridPos": {
+        "x": 12,
+        "y": 8,
+        "w": 12,
+        "h": 8
+      },
+      "datasource": {
+        "type": "grafana-postgresql-datasource",
+        "uid": "fairxai-pg"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "grafana-postgresql-datasource",
+            "uid": "fairxai-pg"
+          },
+          "rawSql": "SELECT window_end AS time, value AS rate_change FROM monitoring_results WHERE kind='prediction_drift' AND value IS NOT NULL AND $__timeFilter(window_end) ORDER BY 1",
+          "format": "time_series",
+          "editorMode": "code",
+          "rawQuery": true
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
+      "options": {}
+    },
+    {
+      "id": 5,
+      "title": "Latest status per signal",
+      "type": "table",
+      "gridPos": {
+        "x": 0,
+        "y": 16,
+        "w": 24,
+        "h": 8
+      },
+      "datasource": {
+        "type": "grafana-postgresql-datasource",
+        "uid": "fairxai-pg"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "grafana-postgresql-datasource",
+            "uid": "fairxai-pg"
+          },
+          "rawSql": "SELECT DISTINCT ON (kind) kind, status, model_version, window_end, n_rows, n_labelled, value FROM monitoring_results WHERE window_end IS NOT NULL ORDER BY kind, window_end DESC",
+          "format": "table",
+          "editorMode": "code",
+          "rawQuery": true
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
+      "options": {}
+    }
+  ],
+  "editable": false
+}

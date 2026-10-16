@@ -173,6 +173,23 @@ services:
       gateway: {condition: service_started}
     profiles: [core]
 
+  grafana:
+    image: grafana/grafana:12.1.1
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD}
+      GF_USERS_ALLOW_SIGN_UP: "false"
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - ../grafana/provisioning:/etc/grafana/provisioning:ro
+      - ../grafana/dashboards:/var/lib/grafana/dashboards:ro
+    ports:
+      - "127.0.0.1:${GRAFANA_PORT:-3000}:3000"
+    depends_on:
+      prometheus: {condition: service_started}
+      postgres: {condition: service_healthy}
+    profiles: [core]
+
 volumes:
   pgdata:
   miniodata:

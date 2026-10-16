@@ -1,0 +1,116 @@
+{
+  "uid": "fairxai-fairness",
+  "title": "FairXAI / Fairness",
+  "tags": [
+    "fairxai"
+  ],
+  "timezone": "browser",
+  "schemaVersion": 39,
+  "refresh": "30s",
+  "time": {
+    "from": "now-6h",
+    "to": "now"
+  },
+  "panels": [
+    {
+      "id": 1,
+      "title": "Equal opportunity difference (limit 0.10; intersectional 0.15)",
+      "type": "timeseries",
+      "gridPos": {
+        "x": 0,
+        "y": 0,
+        "w": 12,
+        "h": 8
+      },
+      "datasource": {
+        "type": "grafana-postgresql-datasource",
+        "uid": "fairxai-pg"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "grafana-postgresql-datasource",
+            "uid": "fairxai-pg"
+          },
+          "rawSql": "SELECT window_end AS time, (details->'gates'->'eo_sex'->>'value')::float AS eo_sex, (details->'gates'->'eo_age'->>'value')::float AS eo_age, (details->'gates'->'eo_inter'->>'value')::float AS eo_inter FROM monitoring_results WHERE kind='fairness' AND status<>'NA' AND $__timeFilter(window_end) ORDER BY 1",
+          "format": "time_series",
+          "editorMode": "code",
+          "rawQuery": true
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
+      "options": {}
+    },
+    {
+      "id": 2,
+      "title": "Disparate impact ratio (limit 0.80)",
+      "type": "timeseries",
+      "gridPos": {
+        "x": 12,
+        "y": 0,
+        "w": 12,
+        "h": 8
+      },
+      "datasource": {
+        "type": "grafana-postgresql-datasource",
+        "uid": "fairxai-pg"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "grafana-postgresql-datasource",
+            "uid": "fairxai-pg"
+          },
+          "rawSql": "SELECT window_end AS time, (details->'gates'->'di_sex'->>'value')::float AS di_sex, (details->'gates'->'di_age'->>'value')::float AS di_age, (details->'gates'->'di_inter'->>'value')::float AS di_inter FROM monitoring_results WHERE kind='fairness' AND status<>'NA' AND $__timeFilter(window_end) ORDER BY 1",
+          "format": "time_series",
+          "editorMode": "code",
+          "rawQuery": true
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
+      "options": {}
+    },
+    {
+      "id": 3,
+      "title": "Latest live fairness checks",
+      "type": "table",
+      "gridPos": {
+        "x": 0,
+        "y": 8,
+        "w": 24,
+        "h": 8
+      },
+      "datasource": {
+        "type": "grafana-postgresql-datasource",
+        "uid": "fairxai-pg"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "grafana-postgresql-datasource",
+            "uid": "fairxai-pg"
+          },
+          "rawSql": "SELECT g.key AS check, g.value->>'status' AS status, (g.value->>'value')::float AS value, (g.value->>'threshold')::float AS threshold FROM (SELECT details FROM monitoring_results WHERE kind='fairness' AND status<>'NA' ORDER BY window_end DESC LIMIT 1) m, jsonb_each(m.details->'gates') g ORDER BY 1",
+          "format": "table",
+          "editorMode": "code",
+          "rawQuery": true
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
+      "options": {}
+    }
+  ],
+  "editable": false
+}

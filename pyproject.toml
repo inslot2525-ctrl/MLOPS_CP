@@ -16,6 +16,13 @@ dependencies = [
   "boto3",
   "great-expectations",
   "xlrd",
+  "fairlearn",
+  "shap",
+  "evidently==0.7.23",
+  "matplotlib",
+  "fastapi",
+  "uvicorn[standard]",
+  "prometheus-client",
 ]
 
 [project.optional-dependencies]
