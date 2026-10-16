@@ -7,6 +7,8 @@ from collections.abc import Callable
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
 
+BACKGROUND_ARTIFACT = "explain_background.csv"
+
 
 class UnknownVersion(Exception):
     pass
@@ -27,11 +29,15 @@ class LoadedModel:
 Loader = Callable[[int], LoadedModel]
 
 
-def mlflow_loader(model_name: str) -> Loader:
+def mlflow_loader(model_name: str, seed: int = 42) -> Loader:
     def load(version: int) -> LoadedModel:
+        import mlflow.artifacts
         import mlflow.sklearn
+        import pandas as pd
         from mlflow import MlflowClient
         from mlflow.exceptions import MlflowException
+
+        from fairxai.explain.shap_local import LocalExplainer
 
         client = MlflowClient()
         try:
@@ -42,6 +48,13 @@ def mlflow_loader(model_name: str) -> Loader:
             raise  # registry unreachable/forbidden is a 500, not "unknown version"
         tags = mv.tags
         pipe = mlflow.sklearn.load_model(f"models:/{model_name}/{version}")
+        background = None
+        try:
+            path = mlflow.artifacts.download_artifacts(run_id=mv.run_id, artifact_path=BACKGROUND_ARTIFACT)
+            background = pd.read_csv(path)
+        except Exception:  # noqa: BLE001 - absent for families that need none; LocalExplainer decides
+            background = None
+        explainer = LocalExplainer(pipe, background, seed)  # failure => load fails, previous model kept
         return LoadedModel(
             version=int(version),
             pipeline=pipe,
@@ -49,6 +62,7 @@ def mlflow_loader(model_name: str) -> Loader:
             run_id=mv.run_id or "",
             git_commit=tags.get("git_commit", ""),
             data_version_id=tags.get("data_version_id", ""),
+            explainer=explainer,
         )
 
     return load

@@ -30,6 +30,7 @@ The Docker VM limit (7.48 GiB) is below the spec's provisional 16 GB budget and 
 | --- | --- | --- | --- |
 | gateway -> blue slot `/v1/predict` | 0 | 27.9 ms | 35.8 ms |
 | blue slot direct | 0 | n/a | 21.8 ms |
+| gateway `/v1/explain` (Phase 7, XGBoost TreeSHAP) | 0 | 28.8 ms | 45.7 ms |
 
 ## Start-up times (wall clock)
 | Step | Seconds |
@@ -52,4 +53,4 @@ The Docker VM limit (7.48 GiB) is below the spec's provisional 16 GB budget and 
 | Peak memory | not measured |
 
 ## Not yet measured
-Explain latency (Phase 7), Airflow memory (Phase 9), Phase 11 re-measurement.
+Airflow memory (Phase 9), Phase 11 re-measurement.

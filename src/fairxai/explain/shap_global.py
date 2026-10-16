@@ -33,15 +33,18 @@ def explainer_method(est) -> tuple[str, str]:
     return "kernel_shap", "probability"
 
 
-def make_explainer(pipe: Pipeline, background: pd.DataFrame, seed: int):
+def make_explainer(pipe: Pipeline, background: pd.DataFrame | None, seed: int):
+    """XGBoost needs no background (path-dependent TreeSHAP, log-odds); every other family does."""
     import shap
 
     pre, est, names = split_pipeline(pipe)
-    bg = pre.transform(background)
     method, _ = explainer_method(est)
+    if method == "tree_shap" and isinstance(est, XGBClassifier):
+        return shap.TreeExplainer(est), names
+    if background is None:
+        raise ValueError(f"{method} for {type(est).__name__} needs a background sample")
+    bg = pre.transform(background)
     if method == "tree_shap":
-        if isinstance(est, XGBClassifier):
-            return shap.TreeExplainer(est), names
         return shap.TreeExplainer(est, model_output="probability", data=bg[:KERNEL_BACKGROUND]), names
     if method == "linear_shap":
         return shap.LinearExplainer(est, bg), names

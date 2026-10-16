@@ -173,11 +173,6 @@ def test_model_info(make_client):
     assert body["model_version"] == 1 and body["slot"] == "blue" and body["run_id"] == "run1"
 
 
-def test_explain_is_501_until_phase_7(make_client, row):
-    client, _ = loaded(make_client)
-    assert client.post("/v1/explain", json={"features": row}, headers=C).status_code == 501
-
-
 def test_feedback_duplicates_and_unknown(make_client, row):
     client, _ = loaded(make_client)
     rid = str(uuid.uuid4())

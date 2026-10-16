@@ -29,3 +29,4 @@ The authoritative register is Section C of [SPEC.md](SPEC.md). This file records
 | 2026-10-16 | 6 | `requirements/serving.lock` pins scikit-learn 1.9.1, xgboost 3.2.0, pandas 3.0.6, numpy 2.4.6 to the training versions; uses `mlflow-skinny==3.17.1`. Gateway reuses the serving lock (one image layer set). | `requirements/serving.in` |
 | 2026-10-16 | 6 | [VERIFY] MLflow 3.17 server validates the Host header; `--allowed-hosts` lists the internal service name and localhost. | compose file |
 | 2026-10-16 | 6 | Slot maps only MLflow `RESOURCE_DOES_NOT_EXIST` to 404; any other registry error is 500 and keeps the previous model. | `serving/app/model_store.py` |
+| 2026-10-16 | 7 | `/v1/explain` contributions are per raw request feature (encoded SHAP values summed per source column); additivity holds. Explainer is built at `/admin/load`. Training logs `explain_background.csv` (1,000 seeded train rows). | `src/fairxai/explain/shap_local.py` |

@@ -17,7 +17,6 @@ STATUS_CODES = {
     413: "payload_too_large",
     422: "validation_error",
     500: "internal_error",
-    501: "not_implemented",
     502: "upstream_unavailable",
     503: "model_not_ready",
     504: "upstream_timeout",

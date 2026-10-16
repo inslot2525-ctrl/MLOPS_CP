@@ -118,6 +118,9 @@ def track_run(
         mlflow.log_text(
             pd.DataFrame(rows).drop(columns=["confusion_matrix"]).to_csv(index=False), "baselines.csv"
         )
+        # background for linear/kernel/sklearn-tree explainers in the serving slot (D.6 /v1/explain)
+        background = X.sample(n=min(1000, len(X)), random_state=cfg.base.seed)
+        mlflow.log_text(background.to_csv(index=False), "explain_background.csv")
         sample = X.head(5)
         info = mlflow.sklearn.log_model(
             pipeline,

@@ -45,7 +45,7 @@ def create_app(settings: Settings | None = None, loader=None, cfg: Config | None
     cfg = cfg or load_config()
     model_name = cfg.base.mlflow.registered_model
     keyring = KeyRing(settings.api_keys, settings.admin_sha256)
-    store = ModelStore(loader or mlflow_loader(model_name))
+    store = ModelStore(loader or mlflow_loader(model_name, cfg.base.seed))
     plog = db or PredictionLog(settings.db_url)
     metrics = SlotMetrics()
     _, PredictRequest = build_request_models(cfg)
@@ -158,8 +158,31 @@ def create_app(settings: Settings | None = None, loader=None, cfg: Config | None
     @app.post("/v1/explain")
     async def explain(request: Request):
         require(request, keyring, admin=False)
-        await parse(request, PredictRequest)
-        raise ApiError(501, "explanations are implemented in Phase 7")
+        raw_k = request.query_params.get("top_k", str(cfg.serving.top_k_default))
+        if not raw_k.isdigit() or not 1 <= int(raw_k) <= len(FEATURES):
+            raise ApiError(
+                422, "invalid top_k", [{"field": "top_k", "problem": f"must be 1-{len(FEATURES)}"}]
+            )
+        req = await parse(request, PredictRequest)
+        m = model_or_503()
+        if m.explainer is None:
+            raise ApiError(500, "no explainer for the loaded model")
+        X = pd.DataFrame([req.features.model_dump()])[FEATURES]
+        prob = float(m.pipeline.predict_proba(X)[0, 1])
+        try:
+            exp = m.explainer.explain(X, int(raw_k))
+        except Exception as exc:  # never fall back to another method silently
+            log.error("explainer failed: %s", type(exc).__name__)
+            raise ApiError(500, "explanation failed") from exc
+        return {
+            "request_id": str(req.request_id or request_id(request)),
+            "model_version": m.version,
+            "method": exp["method"],
+            "output_space": exp["output_space"],
+            "base_value": exp["base_value"],
+            "probability_default": prob,
+            "contributions": exp["contributions"],
+        }
 
     @app.post("/v1/feedback")
     async def feedback(request: Request):
