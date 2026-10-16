@@ -1,0 +1,8 @@
+drift_persistence: 3
+perf_persistence: 2
+cooldown_minutes: 60
+max_runs_per_week: 3
+min_new_rows: 500
+min_new_rows_scheduled: 1000
+new_data_weight: 3
+holdout_percent: 30

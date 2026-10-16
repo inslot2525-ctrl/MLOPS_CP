@@ -1,0 +1,22 @@
+expected_rows: 30000
+target: default
+drop_columns: [ID]
+aliases:
+  target: ["default payment next month", "default.payment.next.month", "Y"]
+  rename: {PAY_1: PAY_0}
+ranges:
+  LIMIT_BAL: [1, 2000000]
+  SEX: [1, 2]
+  EDUCATION: [0, 6]
+  MARRIAGE: [0, 3]
+  AGE: [18, 100]
+  PAY: [-2, 9]
+  BILL_AMT: [-1000000, 2000000]
+  PAY_AMT: [0, null]
+outlier:
+  iqr_multiplier: 3.0
+  warn_factor: 2.0
+  warn_add: 0.05
+  fail_add: 0.20
+default_rate_warn: [0.15, 0.30]
+min_batch_rows: 100

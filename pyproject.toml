@@ -1,0 +1,29 @@
+[project]
+name = "fairxai"
+version = "0.1.0"
+requires-python = ">=3.11,<3.12"
+dependencies = [
+  "pydantic>=2,<3",
+  "pyyaml",
+  "psycopg[binary]>=3.1",
+  "httpx",
+]
+
+[project.optional-dependencies]
+dev = ["pytest", "ruff", "pytest-httpserver"]
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]
+markers = ["full: needs Airflow", "db: needs Postgres (FAIRXAI_TEST_DB_URL)"]
+
+[tool.ruff]
+line-length = 110
+target-version = "py311"

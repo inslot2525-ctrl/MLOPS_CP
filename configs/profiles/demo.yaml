@@ -1,0 +1,1 @@
+retraining: {cooldown_minutes: 5, max_runs_per_week: 3}

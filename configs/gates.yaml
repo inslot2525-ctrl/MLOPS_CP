@@ -1,0 +1,6 @@
+pr_auc_floor: 0.45
+pr_auc_margin: 0.01
+g6: {rows: 200, p95_s: 0.5}
+g7: {min_requests: 100, min_seconds: 120, max_seconds: 600, max_5xx_rate: 0.01, p95_s: 0.5}
+auto_deploy: true
+approval: {model_promotion: false}

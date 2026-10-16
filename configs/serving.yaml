@@ -1,0 +1,4 @@
+top_k_default: 10
+max_body_bytes: 65536
+predict_p95_target_s: 0.2
+explain_p95_target_s: 1.0

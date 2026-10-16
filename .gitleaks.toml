@@ -1,0 +1,8 @@
+title = "fairxai gitleaks"
+
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Fake example values"
+paths = ['''\.env\.example$''', '''docs/SPEC\.md$''']

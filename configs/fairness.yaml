@@ -1,0 +1,11 @@
+favorable_label: 0
+age_bands: {18-29: [18, 29], 30-39: [30, 39], 40+: [40, 100]}
+eo_max: 0.10
+di_min: 0.80
+eo_inter_max: 0.15
+di_inter_min: 0.80
+dp_warn: 0.10
+cal_warn: 0.05
+warn_worse_margin: 0.02
+min_group_rows: 100
+min_denominator_rows: 50

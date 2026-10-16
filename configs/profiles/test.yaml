@@ -1,0 +1,2 @@
+training: {optuna_trials: 3}
+retraining: {cooldown_minutes: 5, max_runs_per_week: 3}

@@ -1,0 +1,9 @@
+seed: 42
+paths:
+  data_dir: data
+  clock_offset_file: .clock_offset
+mlflow:
+  experiment: fairxai
+  registered_model: fairxai-credit-default
+window_rows: 500
+min_window_rows: 300

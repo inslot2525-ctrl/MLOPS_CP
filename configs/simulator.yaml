@@ -1,0 +1,7 @@
+seed: 42
+workers: 4
+max_rps: 20
+label_delay_batches: 1
+faults:
+  covariate_shift: {limit_bal_mult: 0.4, bill_amt1_mult: 1.5, pay_add: 2, pay_clip: 8}
+  concept_shift: {pay0_min: 1, flip_probability: 0.7}

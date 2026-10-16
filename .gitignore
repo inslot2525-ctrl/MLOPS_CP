@@ -1,0 +1,18 @@
+.env
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.ruff_cache/
+*.egg-info/
+.clock_offset
+.deployed_tag
+images.tar
+mlruns/
+# DVC outputs (tracked via dvc.lock, not git)
+/data/processed
+/data/stream
+/data/ingest
+/data/retrain
+/data/raw/*.csv
+/data/raw/*.xls

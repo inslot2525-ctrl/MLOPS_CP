@@ -1,0 +1,9 @@
+models: [logreg, decision_tree, random_forest, xgboost, knn, naive_bayes, svm]
+cv_folds: 5
+tuning_cv_folds: 3
+shortlist: 3
+optuna_trials: 25
+optuna_timeout_s: 900
+imbalance_strategy: class_weight
+n_jobs: 4
+threshold_grid: {start: 0.05, stop: 0.95, step: 0.01}

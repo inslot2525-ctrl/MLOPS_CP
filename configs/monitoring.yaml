@@ -1,0 +1,6 @@
+schedule: null
+p_value: 0.05
+dataset_drift_share: 0.30
+prediction_rate_change: 0.10
+perf_drop: 0.05
+min_labelled_rows: 300
