@@ -14,3 +14,4 @@ mlruns/
 /data/stream
 /data/ingest
 /data/retrain
+/data/runs

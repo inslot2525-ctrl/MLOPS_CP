@@ -6,4 +6,38 @@ optuna_trials: 25
 optuna_timeout_s: 900
 imbalance_strategy: class_weight
 n_jobs: 4
+include_protected: true
 threshold_grid: {start: 0.05, stop: 0.95, step: 0.01}
+baseline_params:
+  logreg: {max_iter: 2000}
+  decision_tree: {}
+  random_forest: {n_estimators: 200}
+  xgboost: {n_estimators: 200, tree_method: hist}
+  knn: {}
+  naive_bayes: {}
+  svm: {}
+search_spaces:
+  logreg:
+    C: {type: float, low: 0.001, high: 100.0, log: true}
+  decision_tree:
+    max_depth: {type: int, low: 2, high: 15}
+    min_samples_leaf: {type: int, low: 1, high: 50}
+  random_forest:
+    n_estimators: {type: int, low: 100, high: 400}
+    max_depth: {type: int, low: 3, high: 20}
+    min_samples_leaf: {type: int, low: 1, high: 20}
+  xgboost:
+    n_estimators: {type: int, low: 100, high: 500}
+    max_depth: {type: int, low: 2, high: 8}
+    learning_rate: {type: float, low: 0.01, high: 0.3, log: true}
+    subsample: {type: float, low: 0.6, high: 1.0}
+    colsample_bytree: {type: float, low: 0.6, high: 1.0}
+    min_child_weight: {type: int, low: 1, high: 10}
+  knn:
+    n_neighbors: {type: int, low: 5, high: 101, step: 2}
+    weights: {type: cat, choices: [uniform, distance]}
+  naive_bayes:
+    var_smoothing: {type: float, low: 1.0e-10, high: 1.0e-6, log: true}
+  svm:
+    C: {type: float, low: 0.1, high: 100.0, log: true}
+    gamma: {type: float, low: 1.0e-4, high: 1.0e-1, log: true}

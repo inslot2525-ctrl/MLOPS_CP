@@ -10,7 +10,7 @@ jobs:
         with:
           python-version: "3.11"
       - name: Install
-        run: pip install -e ".[dev]"
+        run: pip install -r requirements/dev.lock && pip install --no-deps -e .
       - run: ruff check .
       - run: ruff format --check .
       - run: python scripts/check_tree.py

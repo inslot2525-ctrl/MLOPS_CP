@@ -73,7 +73,10 @@ class Training(_M):
     optuna_timeout_s: int
     imbalance_strategy: str
     n_jobs: int
+    include_protected: bool
     threshold_grid: Grid
+    baseline_params: dict[str, dict[str, Any]]
+    search_spaces: dict[str, dict[str, dict[str, Any]]]
 
 
 class Fairness(_M):

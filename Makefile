@@ -1,7 +1,7 @@
 COMPOSE = docker compose --env-file .env -f infra/compose/docker-compose.yml
 PY ?= python
 
-.PHONY: env up up-lite down ps health logs reset lint test test-integration
+.PHONY: train env up up-lite down ps health logs reset lint test test-integration
 
 env:
 	@test -f .env || cp .env.example .env
@@ -10,6 +10,7 @@ env:
 up: env
 	$(COMPOSE) --profile core up -d --wait postgres minio
 	$(COMPOSE) --profile core run --rm init
+	$(COMPOSE) --profile core up -d --build --wait mlflow
 
 up-lite: up
 
@@ -39,3 +40,6 @@ test:
 
 test-integration:
 	$(PY) -m pytest tests/integration
+
+train:
+	$(PY) -m fairxai.models.train

@@ -12,3 +12,7 @@ The authoritative register is Section C of [SPEC.md](SPEC.md). This file records
 | 2026-10-16 | 2 | `reference_stats.json` written by the `split` stage (needs the train partition). | `dvc.yaml` |
 | 2026-10-16 | 2 | Outlier `f_ref` defined as flagged-cell fraction over the 13 continuous columns. | `src/fairxai/data/split.py` |
 | 2026-10-16 | 2 | [VERIFY] Great Expectations 1.24.0: ephemeral context + `add_dataframe_asset` + `batch.validate(suite)` works; DVC 3.67.1. | `src/fairxai/data/validate.py` |
+| 2026-10-16 | 3 | SVM `C`/`gamma` search ranges chosen (spec silent): C 0.1-100, gamma 1e-4..1e-1, log. sklearn 1.9 deprecates `SVC(probability=True)`; kept per spec. | `configs/training.yaml` |
+| 2026-10-16 | 3 | Estimators fit single-threaded; parallelism is across CV folds (`training.n_jobs`), for determinism. | `src/fairxai/models/zoo.py` |
+| 2026-10-16 | 4 | [VERIFY] MLflow 3.17.1: alias API OK; `log_model(name=...)` yields LoggedModel; skops default rejected custom types, so `serialization_format="cloudpickle"` is used. | `docs/evidence/phase_4.md` |
+| 2026-10-16 | 4 | `Registry.register_version` takes a model URI rather than run_id (MLflow 3 LoggedModel). Versions are tagged `gate_decision=PENDING_GATE` until the Phase 5 gate exists. | `src/fairxai/registry/registry.py` |
