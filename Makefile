@@ -4,15 +4,15 @@ PY ?= python
 .PHONY: train env up up-lite down ps health logs reset lint test test-integration
 
 env:
-	@test -f .env || cp .env.example .env
-	@echo ".env ready (replace example secrets before any shared use)"
+	$(PY) scripts/make_env.py
 
-up: env
+# up-lite = core without Airflow (Airflow services arrive in Phase 9)
+up-lite: env
 	$(COMPOSE) --profile core up -d --wait postgres minio
 	$(COMPOSE) --profile core run --rm init
-	$(COMPOSE) --profile core up -d --build --wait mlflow
+	$(COMPOSE) --profile core up -d --build --wait mlflow serving-blue serving-green gateway prometheus
 
-up-lite: up
+up: up-lite
 
 down:
 	$(COMPOSE) --profile core down
@@ -42,4 +42,4 @@ test-integration:
 	$(PY) -m pytest tests/integration
 
 train:
-	$(PY) -m fairxai.models.train
+	$(PY) -m fairxai.models.train --track

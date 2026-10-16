@@ -18,7 +18,8 @@ services:
     profiles: [core]
 
   minio:
-    image: minio/minio:latest
+    # minio/minio is no longer published on Docker Hub; Chainguard's maintained build of MinIO
+    image: cgr.dev/chainguard/minio:latest
     command: server /data --console-address ":9001"
     environment:
       MINIO_ROOT_USER: ${MINIO_ROOT_USER}
@@ -29,7 +30,7 @@ services:
       - "127.0.0.1:${MINIO_PORT:-9000}:9000"
       - "127.0.0.1:${MINIO_CONSOLE_PORT:-9001}:9001"
     healthcheck:
-      test: ["CMD-SHELL", "curl -fs http://localhost:9000/minio/health/live || exit 1"]
+      test: ["CMD", "bash", "-c", "exec 3<>/dev/tcp/127.0.0.1/9000"]
       interval: 5s
       timeout: 3s
       retries: 20
@@ -62,6 +63,7 @@ services:
       mlflow server --host 0.0.0.0 --port 5000
       --backend-store-uri postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/mlflow
       --default-artifact-root s3://mlflow/
+      --workers 1
     environment:
       AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
       AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
@@ -75,6 +77,99 @@ services:
       interval: 10s
       timeout: 5s
       retries: 12
+    profiles: [core]
+
+  serving-blue:
+    build:
+      context: ../..
+      dockerfile: serving/Dockerfile
+    image: fairxai-serving:${IMAGE_TAG:-dev}
+    environment:
+      SLOT_NAME: blue
+      API_KEYS: ${API_KEYS}
+      ADMIN_API_KEY_SHA256: ${ADMIN_API_KEY_SHA256}
+      FAIRXAI_DB_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/fairxai
+      MLFLOW_TRACKING_URI: http://mlflow:5000
+      MLFLOW_S3_ENDPOINT_URL: http://minio:9000
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
+      EXPECTED_MODEL_VERSION: ${EXPECTED_MODEL_VERSION_BLUE:-}
+      IMAGE_TAG: ${IMAGE_TAG:-dev}
+      FAIRXAI_PROFILE: ${FAIRXAI_PROFILE:-base}
+    ports:
+      - "127.0.0.1:${SLOT_BLUE_PORT:-8001}:8000"
+    depends_on:
+      mlflow: {condition: service_healthy}
+    mem_limit: 1g
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request as u; u.urlopen('http://localhost:8000/healthz')"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+    profiles: [core]
+
+  serving-green:
+    build:
+      context: ../..
+      dockerfile: serving/Dockerfile
+    image: fairxai-serving:${IMAGE_TAG:-dev}
+    environment:
+      SLOT_NAME: green
+      API_KEYS: ${API_KEYS}
+      ADMIN_API_KEY_SHA256: ${ADMIN_API_KEY_SHA256}
+      FAIRXAI_DB_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/fairxai
+      MLFLOW_TRACKING_URI: http://mlflow:5000
+      MLFLOW_S3_ENDPOINT_URL: http://minio:9000
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
+      EXPECTED_MODEL_VERSION: ${EXPECTED_MODEL_VERSION_GREEN:-}
+      IMAGE_TAG: ${IMAGE_TAG:-dev}
+      FAIRXAI_PROFILE: ${FAIRXAI_PROFILE:-base}
+    ports:
+      - "127.0.0.1:${SLOT_GREEN_PORT:-8002}:8000"
+    depends_on:
+      mlflow: {condition: service_healthy}
+    mem_limit: 1g
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request as u; u.urlopen('http://localhost:8000/healthz')"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+    profiles: [core]
+
+  gateway:
+    build:
+      context: ../..
+      dockerfile: gateway/Dockerfile
+    image: fairxai-gateway:${IMAGE_TAG:-dev}
+    environment:
+      SLOT_BLUE_URL: http://serving-blue:8000
+      SLOT_GREEN_URL: http://serving-green:8000
+      API_KEYS: ${API_KEYS}
+      ADMIN_API_KEY_SHA256: ${ADMIN_API_KEY_SHA256}
+      FAIRXAI_DB_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/fairxai
+    ports:
+      - "127.0.0.1:${GATEWAY_PORT:-8080}:8080"
+    depends_on:
+      serving-blue: {condition: service_healthy}
+      serving-green: {condition: service_healthy}
+    mem_limit: 256m
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request as u; u.urlopen('http://localhost:8080/healthz')"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+    profiles: [core]
+
+  prometheus:
+    image: prom/prometheus:v3.5.0
+    volumes:
+      - ../prometheus:/etc/prometheus:ro
+    command: ["--config.file=/etc/prometheus/prometheus.yml"]
+    ports:
+      - "127.0.0.1:${PROMETHEUS_PORT:-9090}:9090"
+    depends_on:
+      gateway: {condition: service_started}
     profiles: [core]
 
 volumes:

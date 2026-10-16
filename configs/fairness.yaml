@@ -9,3 +9,5 @@ cal_warn: 0.05
 warn_worse_margin: 0.02
 min_group_rows: 100
 min_denominator_rows: 50
+calibration_bins: 10
+decimals: 6

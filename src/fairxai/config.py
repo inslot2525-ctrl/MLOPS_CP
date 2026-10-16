@@ -81,6 +81,8 @@ class Training(_M):
 
 class Fairness(_M):
     favorable_label: int
+    calibration_bins: int
+    decimals: int
     age_bands: dict[str, list[int]]
     eo_max: float
     di_min: float
@@ -113,6 +115,7 @@ class Approval(_M):
 class Gates(_M):
     pr_auc_floor: float
     pr_auc_margin: float
+    min_eval_rows: int
     g6: G6
     g7: G7
     auto_deploy: bool

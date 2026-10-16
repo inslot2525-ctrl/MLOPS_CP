@@ -1,0 +1,18 @@
+# Serving slots and gateway. Model-loading libraries are pinned to the versions used in training.
+scikit-learn==1.9.1
+xgboost==3.2.0
+pandas==3.0.6
+numpy==2.4.6
+scipy==1.17.1
+cloudpickle==3.1.2
+joblib==1.6.0
+mlflow-skinny==3.17.1
+boto3
+psycopg[binary]==3.3.6
+pydantic==2.14.1
+pyyaml==6.0.3
+httpx==0.28.1
+fastapi==0.143.2
+uvicorn[standard]==0.54.0
+prometheus-client==0.26.0
+shap

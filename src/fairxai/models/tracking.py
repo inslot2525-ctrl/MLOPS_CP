@@ -1,13 +1,14 @@
 """MLflow logging and registration for a finished training run (SPEC D.3 step 8, Phase 4 subset).
 
-Fairness/gate reports and the `candidate` alias arrive in Phase 5; until then versions are tagged
-gate_decision=PENDING_GATE and no alias is set.
+The version is tagged with the real gate decision; alias `candidate` is set only for APPROVED and only
+after the registered-URI smoke check (G5 second half) passes.
 """
 
 from __future__ import annotations
 
 import json
 import subprocess
+import tempfile
 from pathlib import Path
 
 import mlflow
@@ -17,9 +18,9 @@ from mlflow.models import infer_signature
 
 from fairxai.config import Config
 from fairxai.data.load import FEATURES
+from fairxai.explain.shap_global import summary_png
+from fairxai.fairness.report import groups_csv, metric_dict
 from fairxai.registry.registry import Registry
-
-PENDING_GATE = "PENDING_GATE"
 
 
 def git_info(cwd: str | Path = ".") -> tuple[str, bool]:
@@ -57,9 +58,11 @@ def track_run(
 ) -> dict:
     """Log everything to MLflow, register the selected model, run the registered-URI smoke check."""
     det = results["deterministic"]
-    selected = det["selected_pending_gate"]
+    chosen = det["selected"]
+    selected = chosen["model"]
+    decision = chosen["decision"]
     pipeline = results["_selected_pipeline"]
-    chosen = next(r for r in det["tuned"] if r["model"] == selected)
+    tuned = next(r for r in det["tuned"] if r["model"] == selected)
     commit, dirty = git_info()
     mlflow.set_experiment(cfg.base.mlflow.experiment)
     X = train_df[FEATURES]
@@ -77,7 +80,7 @@ def track_run(
         mlflow.log_params({"model": selected, "seed": cfg.base.seed, **_flat("param", chosen["best_params"])})
         mlflow.log_metrics(
             {
-                "cv_pr_auc": chosen["best_cv_pr_auc"],
+                "cv_pr_auc": tuned["best_cv_pr_auc"],
                 "decision_threshold": chosen["decision_threshold"],
                 **{f"eval_{k}": v for k, v in chosen["eval"].items() if isinstance(v, float)},
             }
@@ -96,6 +99,21 @@ def track_run(
             "optuna_summary.json",
         )
         mlflow.log_dict(det, "results.json")
+        mlflow.log_dict(results["fairness_report"], "fairness_report.json")
+        mlflow.log_dict(results["gate_report"], "gate_report.json")
+        mlflow.log_text(groups_csv(results["fairness_report"]), "fairness_groups.csv")
+        mlflow.log_metrics(metric_dict(results["fairness_report"]))
+        mlflow.set_tag("gate_decision", decision)
+        if results.get("test"):
+            test = results["test"]
+            mlflow.log_metrics({f"test_{k}": v for k, v in test["metrics"].items() if isinstance(v, float)})
+            mlflow.log_metrics(metric_dict(test["fairness_report"], prefix="test_fair_"))
+            mlflow.log_dict(test["fairness_report"], "test_fairness_report.json")
+        if results.get("shap", {}).get("importance"):
+            mlflow.log_dict(results["shap"], "shap_importance.json")
+            with tempfile.TemporaryDirectory() as d:
+                summary_png(results["shap"]["importance"], f"{d}/shap_summary.png")
+                mlflow.log_artifact(f"{d}/shap_summary.png")
         rows = [{"model": m, "cv_pr_auc": b["cv_pr_auc"], **b["eval"]} for m, b in det["baselines"].items()]
         mlflow.log_text(
             pd.DataFrame(rows).drop(columns=["confusion_matrix"]).to_csv(index=False), "baselines.csv"
@@ -125,7 +143,7 @@ def track_run(
     version = registry.register_version(
         info.model_uri,
         {
-            "gate_decision": PENDING_GATE,
+            "gate_decision": decision,
             "decision_threshold": chosen["decision_threshold"],
             "eval_pr_auc": chosen["eval"]["pr_auc"],
             "data_version_id": det["data_version_id"],
@@ -137,9 +155,18 @@ def track_run(
     registry.client.set_model_version_tag(
         registry.name, str(version), "g5_smoke", "PASS" if smoke_ok else "FAIL"
     )
-    if not smoke_ok:
-        registry.client.set_model_version_tag(registry.name, str(version), "gate_decision", "REJECTED")
-    return {"run_id": run_id, "model_version": version, "g5_smoke_ok": smoke_ok, "model": selected}
+    if not smoke_ok:  # G5 recorded as FAIL; decision rewritten; no alias
+        decision = "REJECTED"
+        registry.client.set_model_version_tag(registry.name, str(version), "gate_decision", decision)
+    elif decision == "APPROVED":
+        registry.set_candidate(version)
+    return {
+        "run_id": run_id,
+        "model_version": version,
+        "g5_smoke_ok": smoke_ok,
+        "model": selected,
+        "gate_decision": decision,
+    }
 
 
 def dump(out: dict) -> str:

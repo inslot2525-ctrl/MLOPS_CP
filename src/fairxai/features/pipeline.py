@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import numpy as np
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.compose import ColumnTransformer
 from sklearn.pipeline import Pipeline
@@ -19,6 +20,9 @@ class CategoryRemap(BaseEstimator, TransformerMixin):
     """EDUCATION {0,5,6} -> 4 and MARRIAGE 0 -> 3. Idempotent; shared by training, serving and drift."""
 
     def fit(self, X, y=None):
+        # records the input schema so Pipeline.feature_names_in_ works (G5 checks it against FEATURES)
+        self.feature_names_in_ = np.asarray(X.columns, dtype=object)
+        self.n_features_in_ = len(self.feature_names_in_)
         return self
 
     def transform(self, X):

@@ -24,13 +24,24 @@ def test_run_artifacts_registered_and_lineage(tmp_path):
     mlflow.set_registry_uri(uri)
     cfg = load_config("test")
     tr, ev = make_synthetic(1500, seed=1), make_synthetic(600, seed=2)
-    res = run_training(cfg, tr, ev, tmp_path / "out", "synthetic-md5")
+    res = run_training(cfg, tr, ev, tmp_path / "out", "synthetic-md5", ev, None, SMOKE, shap_rows=200)
     reg = Registry(MlflowClient(uri, uri), event_sink=None)
     out = track_run(cfg, res, "synthetic-md5", tr, SMOKE, reg)
 
     assert out["g5_smoke_ok"]  # model (an MLflow 3 LoggedModel, not a run artifact) loads from the registry
     arts = {a.path for a in reg.client.list_artifacts(out["run_id"])}
-    for needed in ("config_snapshot.json", "optuna_summary.json", "baselines.csv", "results.json"):
+    for needed in (
+        "config_snapshot.json",
+        "optuna_summary.json",
+        "baselines.csv",
+        "results.json",
+        "fairness_report.json",
+        "gate_report.json",
+        "fairness_groups.csv",
+        "test_fairness_report.json",
+        "shap_importance.json",
+        "shap_summary.png",
+    ):
         assert needed in arts, needed
     tags = reg.tags(out["model_version"])
     for key in (
@@ -42,8 +53,10 @@ def test_run_artifacts_registered_and_lineage(tmp_path):
         "eval_pr_auc",
     ):
         assert key in tags, key
-    assert tags["gate_decision"] == "PENDING_GATE" and tags["g5_smoke"] == "PASS"
-    assert reg.alias_version("candidate") is None  # never set before the Phase 5 gate
+    assert tags["g5_smoke"] == "PASS"
+    assert tags["gate_decision"] == out["gate_decision"] == res["deterministic"]["selected"]["decision"]
+    # candidate alias exists if and only if the decision is APPROVED
+    assert (reg.alias_version("candidate") == out["model_version"]) == (out["gate_decision"] == "APPROVED")
     info = resolve(out["model_version"], reg.client)
     assert info["dvc_train_md5"] == "synthetic-md5" and info["run_id"] == out["run_id"]
     children = reg.client.search_runs(

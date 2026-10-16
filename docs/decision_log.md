@@ -16,3 +16,14 @@ The authoritative register is Section C of [SPEC.md](SPEC.md). This file records
 | 2026-10-16 | 3 | Estimators fit single-threaded; parallelism is across CV folds (`training.n_jobs`), for determinism. | `src/fairxai/models/zoo.py` |
 | 2026-10-16 | 4 | [VERIFY] MLflow 3.17.1: alias API OK; `log_model(name=...)` yields LoggedModel; skops default rejected custom types, so `serialization_format="cloudpickle"` is used. | `docs/evidence/phase_4.md` |
 | 2026-10-16 | 4 | `Registry.register_version` takes a model URI rather than run_id (MLflow 3 LoggedModel). Versions are tagged `gate_decision=PENDING_GATE` until the Phase 5 gate exists. | `src/fairxai/registry/registry.py` |
+| 2026-10-16 | 5 | `minio/minio` is no longer pullable from Docker Hub (and quay.io returns 401). Switched to `cgr.dev/chainguard/minio:latest` (MinIO RELEASE.2026-09-22); healthcheck uses bash `/dev/tcp` since the image has no curl. MinIO itself (D4) is unchanged. | compose file |
+| 2026-10-16 | 5 | MLflow server image installs `psycopg[binary]` (SQLAlchemy 2.x defaults the postgresql dialect to psycopg 3); `--workers 1` cuts idle memory from 2.21 to 1.68 GiB. | `infra/mlflow/Dockerfile` |
+| 2026-10-16 | 5 | Docker Desktop VM has 7.48 GiB, below the 16 GB provisional budget (N-28). | `docs/resource-report.md` |
+| 2026-10-16 | 5 | Added config keys `gates.min_eval_rows: 100`, `fairness.calibration_bins: 10`, `fairness.decimals: 6` so no threshold is a literal in code (Q-08). | configs |
+| 2026-10-16 | 5 | [VERIFY] shap 0.51.0 and fairlearn 0.15.0. XGBoost TreeExplainer output is log-odds; sklearn tree models use `model_output="probability"` with a 100-row background. | `src/fairxai/explain/shap_global.py` |
+| 2026-10-16 | 5 | G1 failure on the training frame raises (training stops with an error) rather than registering a REJECTED version: there is no valid model to register from invalid data. | `src/fairxai/models/train.py` |
+| 2026-10-16 | 5 | Train CLI reconfigures stdout/stderr to UTF-8 (MLflow emoji crashed `end_run` on cp1252). Failed run `ae5a495f` marked FAILED. | `docs/evidence/phase_5.md` |
+| 2026-10-16 | 5 | `CategoryRemap.fit` records `feature_names_in_` so the pipeline exposes its input schema to G5. | `src/fairxai/features/pipeline.py` |
+| 2026-10-16 | 6 | Added `src/fairxai/httpapi.py` (key hashing, error body) shared by slots and gateway, and `scripts/make_env.py` for `make env` key generation; neither file is in the Section E tree. | repo |
+| 2026-10-16 | 6 | Gateway is given client key hashes only so a client key on an admin route returns 403 (not 401). | `gateway/app/main.py` |
+| 2026-10-16 | 6 | `requirements/serving.lock` pins scikit-learn 1.9.1, xgboost 3.2.0, pandas 3.0.6, numpy 2.4.6 to the training versions; uses `mlflow-skinny==3.17.1`. Gateway reuses the serving lock (one image layer set). | `requirements/serving.in` |

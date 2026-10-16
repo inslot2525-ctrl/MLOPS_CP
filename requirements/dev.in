@@ -14,3 +14,9 @@ xlrd
 pytest
 ruff
 pytest-httpserver
+fastapi
+uvicorn[standard]
+prometheus-client
+shap
+fairlearn
+matplotlib

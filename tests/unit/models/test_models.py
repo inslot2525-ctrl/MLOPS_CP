@@ -110,3 +110,16 @@ def test_data_version_id_stable_and_batch_sensitive():
     assert data_version_id("abc", [("b1", "h1"), ("b2", "h2")]) == data_version_id(
         "abc", [("b2", "h2"), ("b1", "h1")]
     )
+
+
+def test_g5_roundtrip_passes_for_real_pipeline(synthetic_clean):
+    """Regression: the pipeline must expose feature_names_in_ equal to the serving schema."""
+    from pathlib import Path
+
+    from fairxai.models.train import g5_roundtrip
+
+    X, y = synthetic_clean[FEATURES].head(500), synthetic_clean["default"].head(500)
+    pipe = make_pipeline("xgboost", {"n_estimators": 10}, y, CFG).fit(X, y)
+    assert [str(c) for c in pipe.feature_names_in_] == FEATURES
+    ok, detail = g5_roundtrip(pipe, Path(__file__).resolve().parents[2] / "fixtures" / "smoke_set.csv")
+    assert ok is True, detail

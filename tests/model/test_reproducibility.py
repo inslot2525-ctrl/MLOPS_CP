@@ -25,8 +25,8 @@ def test_two_runs_identical(tmp_path):
 
     cfg = load_config("test")
     tr, ev = make_synthetic(1500, seed=1), make_synthetic(600, seed=2)
-    a = run_training(cfg, tr, ev, tmp_path / "a", "synthetic-md5")["deterministic"]
-    b = run_training(cfg, tr, ev, tmp_path / "b", "synthetic-md5")["deterministic"]
+    a = run_training(cfg, tr, ev, tmp_path / "a", "synthetic-md5", shap_rows=200)["deterministic"]
+    b = run_training(cfg, tr, ev, tmp_path / "b", "synthetic-md5", shap_rows=200)["deterministic"]
     fa, fb = _flatten(a), _flatten(b)
     assert fa.keys() == fb.keys()
     for k in fa:
@@ -34,5 +34,5 @@ def test_two_runs_identical(tmp_path):
             assert fa[k] == pytest.approx(fb[k], abs=1e-6), k
         else:
             assert json.dumps(fa[k]) == json.dumps(fb[k]), k
-    assert a["selected_pending_gate"] == b["selected_pending_gate"]
+    assert a["selected"] == b["selected"]
     assert len(a["shortlist"]) == 3 and len(a["baseline_ranking"]) == 7
