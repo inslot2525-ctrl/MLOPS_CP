@@ -20,6 +20,16 @@ The Docker VM limit (7.48 GiB) is below the spec's provisional 16 GB budget and 
 | minio (cgr.dev/chainguard/minio) | 82–88 MiB | Phase 5, idle |
 | mlflow (default workers) | 2.21 GiB | Phase 5, right after start |
 | mlflow (`--workers 1`) | 1.68 GiB | Phase 5, right after start |
+| serving-blue (model v1 loaded, after 600 requests) | 207 MiB of 1 GiB limit | Phase 6 |
+| serving-green (no model) | 75 MiB | Phase 6 |
+| gateway | 52 MiB of 256 MiB limit | Phase 6 |
+| prometheus | 27 MiB | Phase 6 |
+
+## Serving latency (Phase 6, 5 requests/s for 60 s, 300 requests)
+| Path | Errors | p50 | p95 |
+| --- | --- | --- | --- |
+| gateway -> blue slot `/v1/predict` | 0 | 27.9 ms | 35.8 ms |
+| blue slot direct | 0 | n/a | 21.8 ms |
 
 ## Start-up times (wall clock)
 | Step | Seconds |
@@ -27,6 +37,9 @@ The Docker VM limit (7.48 GiB) is below the spec's provisional 16 GB budget and 
 | `up --wait postgres minio` (images cached) | 11 |
 | `run --rm init` (pip install inside python:3.11-slim) | about 40 (not timed precisely) |
 | MLflow image build + start | 83–93 (first build) |
+| serving + gateway image build | 139 |
+| `up --wait` of slots, gateway, prometheus (cached images) | 28 |
+| `/admin/load` of v1 from MLflow/MinIO | 3.2 |
 
 ## Training (Phase 3, real data, host Python, not in Docker)
 | Item | Value |
@@ -39,4 +52,4 @@ The Docker VM limit (7.48 GiB) is below the spec's provisional 16 GB budget and 
 | Peak memory | not measured |
 
 ## Not yet measured
-Serving p95 latency at 5 requests/s (Phase 6), Airflow memory (Phase 9), Phase 11 re-measurement.
+Explain latency (Phase 7), Airflow memory (Phase 9), Phase 11 re-measurement.

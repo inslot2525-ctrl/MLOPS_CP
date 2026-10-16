@@ -37,7 +37,9 @@ def mlflow_loader(model_name: str) -> Loader:
         try:
             mv = client.get_model_version(model_name, str(version))
         except MlflowException as exc:
-            raise UnknownVersion(str(exc)) from exc
+            if exc.error_code == "RESOURCE_DOES_NOT_EXIST":
+                raise UnknownVersion(str(exc)) from exc
+            raise  # registry unreachable/forbidden is a 500, not "unknown version"
         tags = mv.tags
         pipe = mlflow.sklearn.load_model(f"models:/{model_name}/{version}")
         return LoadedModel(

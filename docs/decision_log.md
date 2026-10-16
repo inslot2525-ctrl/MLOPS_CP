@@ -27,3 +27,5 @@ The authoritative register is Section C of [SPEC.md](SPEC.md). This file records
 | 2026-10-16 | 6 | Added `src/fairxai/httpapi.py` (key hashing, error body) shared by slots and gateway, and `scripts/make_env.py` for `make env` key generation; neither file is in the Section E tree. | repo |
 | 2026-10-16 | 6 | Gateway is given client key hashes only so a client key on an admin route returns 403 (not 401). | `gateway/app/main.py` |
 | 2026-10-16 | 6 | `requirements/serving.lock` pins scikit-learn 1.9.1, xgboost 3.2.0, pandas 3.0.6, numpy 2.4.6 to the training versions; uses `mlflow-skinny==3.17.1`. Gateway reuses the serving lock (one image layer set). | `requirements/serving.in` |
+| 2026-10-16 | 6 | [VERIFY] MLflow 3.17 server validates the Host header; `--allowed-hosts` lists the internal service name and localhost. | compose file |
+| 2026-10-16 | 6 | Slot maps only MLflow `RESOURCE_DOES_NOT_EXIST` to 404; any other registry error is 500 and keeps the previous model. | `serving/app/model_store.py` |
