@@ -18,7 +18,7 @@ SAFE='{"features": {"LIMIT_BAL": 500000, "SEX": 1, "EDUCATION": 1, "MARRIAGE": 2
 
 ---
 
-# Person 1 – BUILD (7 min): problem, architecture, data, training
+# Aryan – BUILD (7 min): problem, architecture, data, training
 
 ### 1.1 Opening (1 min) – README on screen
 
@@ -115,7 +115,7 @@ python scripts/profile_data.py 2>/dev/null | tail -15
 
 ---
 
-# Person 2 – TRUST (6 min): fairness gate, registry, serving, SHAP
+# Rishikesh – TRUST (6 min): fairness gate, registry, serving, SHAP
 
 ### 2.1 The promotion gate (2.5 min) – MLflow → run → Artifacts → `gate_report.json`
 
@@ -238,7 +238,7 @@ safe → `PAY_0 −0.361, LIMIT_BAL −0.244, PAY_AMT2 −0.216, PAY_AMT1 −0.1
 
 ---
 
-# Person 3 – OPERATE (8 min): blue-green, monitoring, observability, quality
+# Aditya – OPERATE (8 min): blue-green, monitoring, observability, quality
 
 ### 3.1 Blue-green deployment (2 min) – terminal
 
